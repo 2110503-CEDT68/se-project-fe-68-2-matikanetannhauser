@@ -18,6 +18,50 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
     const role = session.data?.user?.role;
     const router = useRouter();
 
+    const [name, setName] = useState(restaurants.name);
+    const [address, setAddress] = useState(restaurants.address);
+    const [tel, setTel] = useState(restaurants.tel);
+    const [openTime, setOpenTime] = useState(restaurants.openTime);
+    const [closeTime, setCloseTime] = useState(restaurants.closeTime);
+    const [imgsrc, setImageURL] = useState(restaurants.imgsrc);
+
+    const id = restaurants._id;
+
+      const handleSave = async () => {
+  try {
+    const payload = {
+      name,
+      address,
+      tel,
+      openTime,
+      closeTime,
+      imgsrc,
+    };
+
+    const resp = await fetch(`/api/restaurants/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await resp.json();
+
+    if (data.success) {
+      toast.success("Update success");
+      router.push(`/restaurants/${id}`);
+      router.refresh();
+    } else {
+      toast.error("Update failed");
+    }
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Server error");
+  }
+};
+
     return (
         <main className="flex flex-col justify-center items-center w-full flex-1 mt-5">
 
@@ -48,15 +92,41 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
               <div className="flex flex-col gap-3 p-7 border-2 border-black h-full rounded-2xl">
 
                 
-                <h1>Name <TextField id="name" defaultValue={restaurants.name} /> </h1>
+                <h1>Name <TextField
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                /> </h1>
                 <h1>Status </h1>
 
-                <h1>Address <TextField id="address" defaultValue={restaurants.address} /></h1>
-                <h1>Tel <TextField id="tel" defaultValue={restaurants.tel} /></h1>
+                <h1>Address <TextField
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                /> </h1>
 
-                <h1>Opening Hours <TextField id="openTime" defaultValue={restaurants.openTime} /> - <TextField id="closeTime" defaultValue={restaurants.closeTime} /></h1>
+                <h1>Tel <TextField
+                  id="tel"
+                  value={tel}
+                  onChange={(e) => setTel(e.target.value)}
+                /> </h1>
 
-                <h1>Change Photo(url) <TextField id="imageURL" label="image URL" /> </h1>
+                <h1>Opening Hours <TextField
+                  id="openTime"
+                  value={openTime}
+                  onChange={(e) => setOpenTime(e.target.value)}
+                /> - <TextField
+                  id="closeTime"
+                  value={closeTime}
+                  onChange={(e) => setCloseTime(e.target.value)}
+                /> </h1>
+
+                <h1>Change Photo(url) <TextField
+                  id="imageURL"
+                  label="image URL"
+                  value={imgsrc}
+                  onChange={(e) => setImageURL(e.target.value)}
+                /> </h1>
 
                   <Box
                     sx={{
@@ -75,7 +145,9 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
                   CANCLE
                 </Link>
 
-                <button
+                <button 
+                type="button"
+                onClick={handleSave}
                 className="w-40 h-15 text-white bg-black text-[30px] rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl">
                   SAVE
                 </button>
