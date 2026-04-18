@@ -92,41 +92,45 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
               <div className="flex flex-col gap-3 p-7 border-2 border-black h-full rounded-2xl">
 
                 
-                <h1>Name <TextField
+                <label>Name <TextField
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                /> </h1>
-                <h1>Status </h1>
+                /> </label>
+                <label>Status </label>
 
-                <h1>Address <TextField
+                <label>Address <TextField
                   id="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                /> </h1>
+                /> </label>
 
-                <h1>Tel <TextField
+                <label>Tel <TextField
                   id="tel"
                   value={tel}
+                  type='tel'
                   onChange={(e) => setTel(e.target.value)}
-                /> </h1>
+                /> </label>
 
-                <h1>Opening Hours <TextField
+                <label>Opening Hours <TextField
                   id="openTime"
                   value={openTime}
+                  type='time'
                   onChange={(e) => setOpenTime(e.target.value)}
                 /> - <TextField
                   id="closeTime"
+                  type='time'
                   value={closeTime}
                   onChange={(e) => setCloseTime(e.target.value)}
-                /> </h1>
+                /> </label>
 
-                <h1>Change Photo(url) <TextField
+                <label>Change Photo(url) <TextField
                   id="imageURL"
                   label="image URL"
                   value={imgsrc}
+                  type='url'
                   onChange={(e) => setImageURL(e.target.value)}
-                /> </h1>
+                /></label>
 
                   <Box
                     sx={{
