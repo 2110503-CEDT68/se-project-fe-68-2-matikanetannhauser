@@ -11,12 +11,11 @@ export default function Login() {
             const password = formData.get("password")?.toString();
             // console.log(email, password);
             // console.log("backend url:", process.env.NEXT_PUBLIC_BACKEND_URL);
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/login`, {
+            const resp = await fetch(`/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
                 body: JSON.stringify({email, password})
             });
             const data = await resp.json().catch(() => null);

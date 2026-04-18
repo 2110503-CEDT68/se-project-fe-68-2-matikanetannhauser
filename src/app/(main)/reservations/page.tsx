@@ -1,19 +1,23 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import ReservationClient from "./ReservationClient";
 import Light from "@/components/ui/Light";
 
 export default async function ReservationPage() {
 console.log("inner")
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
     const h = await headers();
-    const reservationsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/reservations`, {
+    const reservationsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/reservations`, {
         cache: 'no-store',
         headers: {
-            cookie: h.get("cookie") ?? "",
+          Authorization: `Bearer ${token}`,
         }
     });
     if(!reservationsRes.ok) {
+      console.log("www")
         notFound();
     }
     const reservationsData = await reservationsRes.json();

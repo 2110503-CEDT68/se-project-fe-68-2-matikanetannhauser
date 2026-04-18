@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import Light from "@/components/ui/Light"
 import RestaurantClient from "./RestaurantClient";
 import Comment from "@/models/comment";
@@ -7,11 +7,24 @@ import { connectDB } from "@/lib/db";
 
 export default async function RestaurantsPage({params}: {params: Promise<{id: string}>}) {
     const { id } = await params;
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const res = await fetch(`${process.env.BACKEND_URL}/api/v1/auth/me`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    const data = await res.json();
+    const role = data?.data?.role || null;
+
     const h = await headers();
-    const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`, {
+    const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${id}`, {
         cache: 'no-store',
         headers: {
-            cookie: h.get("cookie") ?? "",
+          Authorization: `Bearer ${token}`,
         }
     });
 
@@ -49,7 +62,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     return (
         <>
             <Light/>
-            <RestaurantClient restaurants={restaurants} rating={avgStar}/>
+            <RestaurantClient restaurants={restaurants} rating={avgStar} role={role}/>
         </>
     )
 }

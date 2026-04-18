@@ -9,8 +9,9 @@ export default function ReservationClient({initReservation}:{initReservation:Res
     const [reservations, setReservations] = useState(initReservation);
 
     const removeReserve = (id:string) => {
-        setReservations((pv) => pv.filter((it) => it._id!==id))
+        setReservations((pv) => pv.filter((it) => it._id.toString()!==id))
     }
+
     return (
         <div className="max-w-7xl mx-auto py-8 w-full space-y-4 ">
             <h1 className="text-2xl font-bold">My Reservations</h1>
@@ -20,7 +21,7 @@ export default function ReservationClient({initReservation}:{initReservation:Res
                         <Link href={`/reservations/${it._id}`} className="block w-full">
                             <div>
                                 <ReserveItemHeader>{it.restaurantName}</ReserveItemHeader>
-                                <ReserveItemContent>Reserved By: {it.userName}</ReserveItemContent>
+                                <ReserveItemContent>Reserved By: {it.user}</ReserveItemContent>
                                 <ReserveItemContent>Reserved Time: {it.startDateTime.toString()} - {it.endDateTime.toString()}</ReserveItemContent>
                             </div>
                         </Link>

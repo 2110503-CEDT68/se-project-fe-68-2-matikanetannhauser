@@ -11,20 +11,17 @@ import { useRouter } from "next/navigation";
 import { RestaurantAlertRemove } from "@/components/RestaurantAlertRemove";
 import Link from "next/link";
 
-export default function RestaurantClient({restaurants,rating}:{restaurants:RestaurantType , rating:number}) {
+export default function RestaurantClient({restaurants,rating,role}:{restaurants:RestaurantType , rating:number , role:String}) {
     const [showCard, setShowCard] = useState(false);
-    const session = useSession();
     const pathname = usePathname();
-    console.log(session);
-    const role = session.data?.user?.role;
     const router = useRouter();
     const handleDelete = async () => {
       try {
             const [restaurantResp, reservationsResp] = await Promise.all([
-              fetch(`/api/restaurants/${restaurants._id.toString()}`, {
+              fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${restaurants._id.toString()}`, {
                 method: "DELETE",
               }),
-              fetch(`/api/restaurants/${restaurants._id.toString()}/reservations`, {
+              fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${restaurants._id.toString()}/reservations`, {
                 method: "DELETE",
               }),
             ])
@@ -104,38 +101,31 @@ export default function RestaurantClient({restaurants,rating}:{restaurants:Resta
 
                 <img src={restaurants.imgsrc} className=" rounded-3xl w-full h-96 object-cover border-2 border-white shadow-[0_20px_20px_rgba(0,0,0,0.6)]" />
                 
-                <div className="flex justify-start items-center flex-1 gap-15 [text-shadow:0_4px_20px_rgba(0,0,0,1)]">
+                <div className="flex mt-10 justify-start items-center flex-1 gap-15 [text-shadow:0_4px_20px_rgba(0,0,0,1)]">
                     <h1 className=" ml-30 pr-15 text-[60px] border-r-1 border-black">{restaurants.name}</h1>
                     <h1 className=" text-[30px]">{restaurants.address} Tel: {restaurants.tel} </h1>
                 </div>
 
-                <div className="flex items-end flex-col w-full p-4 gap-y-3">
-                    {(() => {
-                      if(role==='owner' || role==='admin') {
-                        return (
-                          <>
-                            <Link href={`${pathname}/edit`}
-                            className="w-40 h-12 text-white bg-black text-[30px] rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl">
-                                EDIT
-                            </Link>
-                            
-                            <RestaurantAlertRemove handleDelete={() => handleDelete()}/>
-                          </>
-                        )
-                      }
-                      return (
-                        <>
-                          <button className="w-40 h-12 text-white bg-black text-[30px] rounded-xl [text-shadow:0_0_20px_white,0_0_60px_rgba(255,255,255,1),0_0_100px_rgba(255,255,255,0.8)] font-bold
-                            transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl"
-                              onClick={(e) => {
-                                setShowCard(true)
-                              }}
-                            >
-                                RESERVE
-                            </button>
-                        </>
-                      )
-                    })()}
+                <div className="justify-end flex items-end flex-row w-full p-4 gap-x-3">
+                  {(role === 'owner' || role === 'admin') ? (
+                    <>
+                      <Link
+                        href={`${pathname}/edit`}
+                        className="w-40 h-12 text-white bg-black text-[30px] rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl"
+                      >
+                        EDIT
+                      </Link>
+
+                      <RestaurantAlertRemove handleDelete={handleDelete} />
+                    </>
+                  ) : (
+                    <button
+                      className="w-40 h-12 text-white bg-black text-[30px] rounded-xl [text-shadow:0_0_20px_white,0_0_60px_rgba(255,255,255,1),0_0_100px_rgba(255,255,255,0.8)] font-bold transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl"
+                      onClick={() => setShowCard(true)}
+                    >
+                      RESERVE
+                    </button>
+                  )}
                 </div>
                 
             </div>
