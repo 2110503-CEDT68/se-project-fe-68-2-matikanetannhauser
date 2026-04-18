@@ -18,6 +18,7 @@ const AddRestaurantCard = ({closeCard}:{closeCard: () => void}) => {
                 openTime: formData.get("openTime"),
                 closeTime: formData.get("closeTime"),
             }
+            // console.log(payload);
             const resp = await fetch(`/api/restaurants`, {
                 method: 'POST',
                 headers: {
@@ -51,31 +52,20 @@ const AddRestaurantCard = ({closeCard}:{closeCard: () => void}) => {
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-2">
                         <label htmlFor='name'>Name: </label>
-                        <input id='name' placeholder="Input Name" required/>
+                        <input id='name' name='name' placeholder="Input Name" required/>
                         <label htmlFor="address">Address: </label>
-                        <input id='address' placeholder="Input Address" required/>
+                        <input id='address' name='address' placeholder="Input Address" required/>
                         <label htmlFor='tel'>Tel: </label>
-                        <input id='tel' placeholder="Input Tel" required/>
+                        <input id='tel' name='tel' placeholder="Input Tel" required/>
                         <label>Open Hours: </label>
                         <span className="space-x-3">
-                            <input type='time' id='openTime'/>
+                            <input type='time' id='openTime' name='openTime'/>
                             <span>to</span>
-                            <input type="time" id='closeTime'/>
+                            <input type="time" id='closeTime' name='closeTime'/>
                         </span>
+                        <label htmlFor="imgsrc" className="block mt-3">Add Photo</label>
+                        <input id='imgsrc' type='url' name='imgsrc' placeholder="Input Image URL"/>
                     </div>
-                    <label htmlFor="imgsrc" className="block">
-                        Add Photo
-                        <div className="w-full h-32 flex justify-center items-center border-2 border-dashed border-muted-foreground/40 rounded-md transition duration-100 hover:bg-muted hover:text-foreground">
-                            <Camera/>
-                        </div>
-                    </label>
-                    <input
-                        id='imgsrc'
-                        name='imgsrc'
-                        type='file'
-                        accept="image/*"
-                        className="hidden"
-                    />
                     <div>
                         <Button variant={'outline'} className="w-full bg-black text-white" type='submit'>Submit</Button>
                     </div>

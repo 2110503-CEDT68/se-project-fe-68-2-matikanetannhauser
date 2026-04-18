@@ -5,13 +5,16 @@ import type { RestaurantType } from "@/types/types"
 import { AddReserveCard } from "@/components/AddReserveCard";
 import { Rating } from "@mui/material";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { RestaurantAlertRemove } from "@/components/RestaurantAlertRemove";
+import Link from "next/link";
 
 export default function RestaurantClient({restaurants,rating}:{restaurants:RestaurantType , rating:number}) {
     const [showCard, setShowCard] = useState(false);
     const session = useSession();
+    const pathname = usePathname();
     console.log(session);
     const role = session.data?.user?.role;
     const router = useRouter();
@@ -111,11 +114,10 @@ export default function RestaurantClient({restaurants,rating}:{restaurants:Resta
                       if(role==='owner' || role==='admin') {
                         return (
                           <>
-                            <button className="w-40 h-12 text-white bg-black text-[30px] rounded-xl [text-shadow:0_0_20px_white,0_0_60px_rgba(255,255,255,1),0_0_100px_rgba(255,255,255,0.8)] font-bold
-                            transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl"
-                            >
+                            <Link href={`${pathname}/edit`}
+                            className="w-40 h-12 text-white bg-black text-[30px] rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl">
                                 EDIT
-                            </button>
+                            </Link>
                             
                             <RestaurantAlertRemove handleDelete={() => handleDelete()}/>
                           </>
