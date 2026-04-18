@@ -51,19 +51,18 @@ describe("AddRestaurantCard", () => {
     expect(allTimeInputs.length).toBe(2);
   });
 
-  it("renders a hidden file input for the image", () => {
+  it("renders a URL input for the image", () => {
     render(<AddRestaurantCard closeCard={mockCloseCard} />);
-    const fileInput = document.querySelector(
-      "input[type='file']"
-    ) as HTMLInputElement;
-    expect(fileInput).toBeInTheDocument();
-    expect(fileInput.accept).toBe("image/*");
+    const imgInput = screen.getByPlaceholderText("Input Image URL") as HTMLInputElement;
+    
+    expect(imgInput).toBeInTheDocument();
+    expect(imgInput.type).toBe("url");
+    expect(imgInput.name).toBe("imgsrc");
   });
 
-  it("renders the Add Photo label with the camera icon", () => {
+  it("renders the Add Photo label", () => {
     render(<AddRestaurantCard closeCard={mockCloseCard} />);
     expect(screen.getByText("Add Photo")).toBeInTheDocument();
-    expect(screen.getByTestId("camera-icon")).toBeInTheDocument();
   });
 
   it("renders a Submit button", () => {
@@ -186,6 +185,55 @@ describe("AddRestaurantCard", () => {
 
     await waitFor(() => {
       expect(mockCloseCard).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── Fallback Logic ─────────────────────────────────────────────
+
+  it("uses the default 'Failed to create' message when the API response has no message field", async () => {
+    const { toast } = require("sonner");
+    
+    // Mock a failed response with an empty JSON object
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}), 
+    });
+
+    render(<AddRestaurantCard closeCard={mockCloseCard} />);
+
+    const form = document.querySelector("form") as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to create",
+        expect.objectContaining({
+          // Verifies the "data.message || 'Failed to create'" logic
+          description: "Failed to create", 
+        })
+      );
+    });
+  });
+
+  it("shows 'Something went wrong.' when the caught error is not an instance of Error", async () => {
+    const { toast } = require("sonner");
+    
+    // Force fetch to reject with a plain string instead of a new Error()
+    // This triggers the 'else' branch: err instanceof Error ? ... : "Something went wrong."
+    (fetch as jest.Mock).mockRejectedValueOnce("A literal string error");
+
+    render(<AddRestaurantCard closeCard={mockCloseCard} />);
+
+    const form = document.querySelector("form") as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to create",
+        expect.objectContaining({
+          description: "Something went wrong.",
+        })
+      );
     });
   });
 });

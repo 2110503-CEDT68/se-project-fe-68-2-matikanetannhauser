@@ -176,6 +176,46 @@ describe("AlertRemoveDialog", () => {
     });
   });
 
+  it("uses fallback error message when API returns non-ok without a message", async () => {
+    const { toast } = require("sonner");
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}), // No message field
+    });
+    render(<AlertRemoveDialog id={RESERVATION_ID} />);
+    openDialog();
+    fireEvent.click(await screen.findByText("Continue"));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to delete reservation.",
+        expect.objectContaining({ 
+          // This matches the string inside: throw new Error(data.message || "...")
+          description: "Failed to delete reservation" 
+        })
+      );
+    });
+  });
+
+  it("shows 'Something went wrong.' when the caught error is not an Error object", async () => {
+    const { toast } = require("sonner");
+    // Mocking a rejection with a plain string instead of new Error()
+    (fetch as jest.Mock).mockRejectedValueOnce("Unexpected string error");
+
+    render(<AlertRemoveDialog id={RESERVATION_ID} />);
+    openDialog();
+    fireEvent.click(await screen.findByText("Continue"));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to delete reservation.",
+        expect.objectContaining({ 
+          description: "Something went wrong." 
+        })
+      );
+    });
+  });
+
   // ── Edge cases ─────────────────────────────────────────────────────────────
 
   it("does not throw when removeReserve prop is omitted", async () => {

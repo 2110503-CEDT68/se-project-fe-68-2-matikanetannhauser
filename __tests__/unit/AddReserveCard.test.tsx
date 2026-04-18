@@ -14,39 +14,35 @@ jest.mock("sonner", () => ({
 }));
 
 jest.mock("next-auth/react", () => ({
-  useSession: () => ({
+  useSession: jest.fn(() => ({
     data: {
       user: {
         name: "Jane Doe",
         telephone: "0891234567",
-        email: "jane@example.com",
-        role: "user",
-        sub: "user-id-1",
       },
     },
     status: "authenticated",
-  }),
+  })),
 }));
-
-// ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const mockRestaurant = {
   _id: "rest-123" as any,
   name: "Test Restaurant",
-  address: "123 Main St",
-  imgsrc: "/test.jpg",
-  tel: "0898765432",
   openTime: "10:00",
   closeTime: "22:00",
 };
-
-// ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("AddReserveCard", () => {
   const mockCloseCard = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default mock behavior
+    const { useSession } = require("next-auth/react");
+    useSession.mockReturnValue({
+        data: { user: { name: "Jane Doe", telephone: "0891234567" } },
+        status: "authenticated"
+    });
   });
 
   // ── Rendering ──────────────────────────────────────────────────────────────
@@ -258,5 +254,50 @@ describe("AddReserveCard", () => {
     const endInput = screen.getByLabelText("End:") as HTMLInputElement;
     fireEvent.change(endInput, { target: { value: "11:30" } });
     expect(endInput.value).toBe("11:30");
+  });
+
+
+   // ── Unexpected Behavior ────────────────────────────────────────────────────────────
+
+   it("renders empty user info when the session is null", () => {
+    const { useSession } = require("next-auth/react");
+    useSession.mockReturnValue({ data: null, status: "unauthenticated" });
+
+    render(<AddReserveCard restaurant={mockRestaurant} closeCard={mockCloseCard} />);
+    expect(screen.getByText("User:")).toBeInTheDocument();
+    expect(screen.getByText("Tel:")).toBeInTheDocument();
+  });
+
+  it("uses the fallback 'Failed to reserve' message when the API provides no message", async () => {
+    const { toast } = require("sonner");
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}),
+    });
+
+    render(<AddReserveCard restaurant={mockRestaurant} closeCard={mockCloseCard} />);
+    fireEvent.click(screen.getByRole("button", { name: /reserve/i }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to reserve",
+        expect.objectContaining({ description: "Failed to reserve" })
+      );
+    });
+  });
+
+  it("shows 'Something went wrong.' when the caught error is not an Error object", async () => {
+    const { toast } = require("sonner");
+    (fetch as jest.Mock).mockRejectedValueOnce("Literal String Error");
+
+    render(<AddReserveCard restaurant={mockRestaurant} closeCard={mockCloseCard} />);
+    fireEvent.click(screen.getByRole("button", { name: /reserve/i }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Failed to reserve",
+        expect.objectContaining({ description: "Something went wrong." })
+      );
+    });
   });
 });
