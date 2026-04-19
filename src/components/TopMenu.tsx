@@ -7,6 +7,13 @@ export default async function TopMenu() {
     console.log("HELLO", user);
     return (
   <ul className="h-[150px] flex justify-end items-center px-15 gap-4">
+
+    {(user && user.role === "owner") && (
+      <div className="relative flex flex-col h-full justify-center items-center">
+      <TopMenuItem title="MY RESTAURANTS" pageRef="/yourRestaurants"  cstart="#C8753E" cend="#9E8364" />
+      </div>
+    )}
+
     <TopMenuItem title="HOME" pageRef="/" cstart="#E8D9D9" cend="#3A231E"/>
     <TopMenuItem title="RESTAURANT" pageRef="/restaurants" cstart="#988E53" cend="#649E70"/>
     <TopMenuItem title="RESERVE" pageRef="/reservations"  cstart="#272727" cend="#BEBEBE" />

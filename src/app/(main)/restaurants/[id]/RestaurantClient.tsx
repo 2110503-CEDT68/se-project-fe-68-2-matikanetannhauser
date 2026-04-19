@@ -10,11 +10,16 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { RestaurantAlertRemove } from "@/components/RestaurantAlertRemove";
 import Link from "next/link";
+import { getUser } from "@/lib/getUser";
 
-export default function RestaurantClient({restaurants,rating,role}:{restaurants:RestaurantType , rating:number , role:String}) {
+export default function RestaurantClient({restaurants,rating,role,user}:{restaurants:any , rating:number , role:String , user:any}) {
     const [showCard, setShowCard] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
+
+    console.log("owner",restaurants.user)
+    console.log("user",user)
+
     const handleDelete = async () => {
       try {
             const [restaurantResp, reservationsResp] = await Promise.all([
@@ -107,7 +112,7 @@ export default function RestaurantClient({restaurants,rating,role}:{restaurants:
                 </div>
 
                 <div className="justify-end flex items-end flex-row w-full p-4 gap-x-3">
-                  {(role === 'owner' || role === 'admin') ? (
+                  {((role === 'owner' && restaurants.user === user._id)|| role === 'admin') ? (
                     <>
                       <Link
                         href={`${pathname}/edit`}

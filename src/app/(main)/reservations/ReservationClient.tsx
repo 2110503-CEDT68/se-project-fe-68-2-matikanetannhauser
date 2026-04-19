@@ -21,7 +21,7 @@ export default function ReservationClient({initReservation}:{initReservation:Res
                         <Link href={`/reservations/${it._id}`} className="block w-full">
                             <div>
                                 <ReserveItemHeader>{it.restaurantName}</ReserveItemHeader>
-                                <ReserveItemContent>Reserved By: {it.user}</ReserveItemContent>
+                                <ReserveItemContent>Reserved By: {it.userName ?? "Unknown"}</ReserveItemContent>
                                 <ReserveItemContent>Reserved Time: {it.startDateTime.toString()} - {it.endDateTime.toString()}</ReserveItemContent>
                             </div>
                         </Link>

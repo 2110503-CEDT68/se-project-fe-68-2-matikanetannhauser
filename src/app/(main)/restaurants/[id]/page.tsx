@@ -4,12 +4,14 @@ import Light from "@/components/ui/Light"
 import RestaurantClient from "./RestaurantClient";
 import Comment from "@/models/comment";
 import { connectDB } from "@/lib/db";
+import { getUser } from "@/lib/getUser";
 
 export default async function RestaurantsPage({params}: {params: Promise<{id: string}>}) {
     const { id } = await params;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
+    const user = await getUser();
 
     const res = await fetch(`${process.env.BACKEND_URL}/api/v1/auth/me`, {
         headers: {
@@ -62,7 +64,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     return (
         <>
             <Light/>
-            <RestaurantClient restaurants={restaurants} rating={avgStar} role={role}/>
+            <RestaurantClient restaurants={restaurants} rating={avgStar} role={role} user={user}/>
         </>
     )
 }
