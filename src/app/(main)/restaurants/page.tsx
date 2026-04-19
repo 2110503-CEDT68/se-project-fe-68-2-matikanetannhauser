@@ -6,7 +6,6 @@ import { Box } from "@mui/material";
 import Card from "@/components/ui/Card";
 import Comment from "@/models/comment";
 import { connectDB } from "@/lib/db";
-import { AddRestaurantCard } from "@/components/AddRestaurantCard";
 import RestaurantHomeClient from "./RestaurantHomeClient";
 
 export default async function RestaurantsPage() {
@@ -23,8 +22,6 @@ export default async function RestaurantsPage() {
     }
     const restaurantsData = await restaurantsRes.json();
     const restaurants = restaurantsData.data;
-    // console.log(reservationsRes);
-    // console.log(reservations);
 
       await connectDB();
     
@@ -40,9 +37,6 @@ export default async function RestaurantsPage() {
       const ratingMap = Object.fromEntries(
         ratings.map(r => [r._id.toString(), r.avgStar])
       );
-
-      console.log("Res",restaurantsData);
-
     return (
         <>
         <Light/>

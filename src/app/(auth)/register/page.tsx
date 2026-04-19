@@ -112,7 +112,7 @@ export default function RestaurantsPage() {
 
   return (
     <main className="flex justify-center items-center h-screen bg-[#161b22]">
-      <div className="flex flex-col rounded-3xl w-[700px] bg-[#0d1117] p-10 gap-10">
+      <div className="flex flex-col rounded-3xl w-175 bg-[#0d1117] p-10 gap-10">
         <div className="grid grid-cols-2 gap-6">
           <CreateBar
             txt="Email"

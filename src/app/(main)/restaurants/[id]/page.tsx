@@ -20,7 +20,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     });
 
     const data = await res.json();
-    const role = data?.data?.role || null;
+    const role = user.role || null;
 
     const h = await headers();
     const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${id}`, {
@@ -29,18 +29,12 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
           Authorization: `Bearer ${token}`,
         }
     });
-
     
     if(!restaurantsRes.ok) {
-        // console.log("restaurantsRes :",restaurantsRes)
-        // console.log("Incoming ID:", id);
-        // console.log("Type:", typeof id);
         notFound();
     }
     const restaurantsData = await restaurantsRes.json();
     const restaurants = restaurantsData.data;
-    // console.log(reservationsRes);
-    // console.log(reservations);
 
     await connectDB();
 

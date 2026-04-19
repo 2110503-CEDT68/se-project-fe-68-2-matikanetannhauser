@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from "react";
-import type { RestaurantType } from "@/types/types"
+import type { RestaurantType, UserType } from "@/types/types"
 import { AddReserveCard } from "@/components/AddReserveCard";
 import { Rating } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -107,7 +106,7 @@ export default function RestaurantClient({restaurants,rating,role,user}:{restaur
                 <img src={restaurants.imgsrc} className=" rounded-3xl w-full h-96 object-cover border-2 border-white shadow-[0_20px_20px_rgba(0,0,0,0.6)]" />
                 
                 <div className="flex mt-10 justify-start items-center flex-1 gap-15 [text-shadow:0_4px_20px_rgba(0,0,0,1)]">
-                    <h1 className=" ml-30 pr-15 text-[60px] border-r-1 border-black">{restaurants.name}</h1>
+                    <h1 className=" ml-30 pr-15 text-[60px] border-r border-black">{restaurants.name}</h1>
                     <h1 className=" text-[30px]">{restaurants.address} Tel: {restaurants.tel} </h1>
                 </div>
 
@@ -135,7 +134,7 @@ export default function RestaurantClient({restaurants,rating,role,user}:{restaur
                 
             </div>
             {showCard && (
-              <AddReserveCard restaurant={restaurants} closeCard={() => setShowCard(false)}/>
+              <AddReserveCard user={user} restaurant={restaurants} closeCard={() => setShowCard(false)}/>
             )}
         </main>
     )

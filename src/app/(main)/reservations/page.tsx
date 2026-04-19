@@ -4,8 +4,6 @@ import ReservationClient from "./ReservationClient";
 import Light from "@/components/ui/Light";
 
 export default async function ReservationPage() {
-console.log("inner")
-
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -17,7 +15,6 @@ console.log("inner")
         }
     });
     if(!reservationsRes.ok) {
-      console.log("www")
         notFound();
     }
     const reservationsData = await reservationsRes.json();

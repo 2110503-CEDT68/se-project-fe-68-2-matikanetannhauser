@@ -17,11 +17,12 @@ export default function ReservationClient({initReservation}:{initReservation:Res
             <h1 className="text-2xl font-bold">My Reservations</h1>
             <div className="grid grid-cols-2 gap-10 w-full max-h-96 ">
                 {reservations.map((it:any) => (
-                    <ReserveItemContainer key={it._id} className="flex items-center justify-between" >
-                        <Link href={`/reservations/${it._id}`} className="block w-full">
+                    <ReserveItemContainer key={it._id.toString()} className="flex items-center justify-between" >
+                        <Link href={`/reservations/${it._id.toString()}`} className="block w-full">
                             <div>
-                                <ReserveItemHeader>{it.restaurantName}</ReserveItemHeader>
-                                <ReserveItemContent>Reserved By: {it.userName ?? "Unknown"}</ReserveItemContent>
+
+                                <ReserveItemHeader>{it.restaurant.name}</ReserveItemHeader>
+                                <ReserveItemContent>Reserved By: {it.user.name}</ReserveItemContent>
                                 <ReserveItemContent>Reserved Time: {it.startDateTime.toString()} - {it.endDateTime.toString()}</ReserveItemContent>
                             </div>
                         </Link>
