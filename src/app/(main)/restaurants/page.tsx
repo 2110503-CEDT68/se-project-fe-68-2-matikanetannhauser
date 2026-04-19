@@ -24,6 +24,7 @@ export default async function RestaurantsPage() {
     const restaurantsData = await restaurantsRes.json();
     const restaurants = restaurantsData.data;
     const user = await getUser();
+    console.log("USER", user);
     
     // console.log(restaurants);
 
@@ -86,7 +87,7 @@ export default async function RestaurantsPage() {
             </Box>
 
         </div>
-        {(user.role==='owner' || user.role==='admin') && <RestaurantHomeClient/>}
+        {['owner', 'admin'].includes(user?.role) && <RestaurantHomeClient/>}
         </>
     )
 }
