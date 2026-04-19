@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Reservation from "@/models/Reservation";
 import { getUser } from "@/lib/getUser";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
     try {
@@ -94,5 +95,44 @@ export async function GET(req: NextRequest) {
         }, {
             status: 500
         })
+    }
+
+}
+
+export async function POST(req: NextRequest) {
+    try {
+        const token = (await cookies()).get('token')?.value;
+        if(!token || token === 'null') {
+            return NextResponse.json({
+                    success: false,
+                    message: 'Not authorized',
+                },
+                {
+                    status: 401,
+                }
+            );
+        }
+        const body = await req.json();
+        const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/restaurants`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(body),
+        });
+        const data = await resp.json().catch(() => null);
+
+        return NextResponse.json(data, {
+            status: resp.status
+        });
+    } catch(err) {
+        console.log(err);
+        return NextResponse.json({
+            success: false,
+            message: 'Cannot create Restaurant'
+        }, {
+            status: 500
+        });
     }
 }
