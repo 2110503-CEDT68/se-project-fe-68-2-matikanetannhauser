@@ -7,6 +7,7 @@ import Card from "@/components/ui/Card";
 import Comment from "@/models/comment";
 import { connectDB } from "@/lib/db";
 import RestaurantHomeClient from "./RestaurantHomeClient";
+import { getUser } from "@/lib/getUser";
 
 export default async function RestaurantsPage() {
 
@@ -22,6 +23,7 @@ export default async function RestaurantsPage() {
     }
     const restaurantsData = await restaurantsRes.json();
     const restaurants = restaurantsData.data;
+    const user = await getUser();
     
     // console.log(restaurants);
 
@@ -84,7 +86,7 @@ export default async function RestaurantsPage() {
             </Box>
 
         </div>
-        <RestaurantHomeClient/>
+        {(user.role==='owner' || user.role==='admin') && <RestaurantHomeClient/>}
         </>
     )
 }
