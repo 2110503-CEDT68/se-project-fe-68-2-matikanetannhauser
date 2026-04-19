@@ -10,7 +10,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     const { id } = await params;
 
     const h = await headers();
-    const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`, {
+    const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${id}`, {
         cache: 'no-store',
         headers: {
             cookie: h.get("cookie") ?? "",

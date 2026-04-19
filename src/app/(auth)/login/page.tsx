@@ -16,7 +16,6 @@ export default function Login() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // credentials: 'include',
                 body: JSON.stringify({email, password})
             });
             const data = await resp.json().catch(() => null);

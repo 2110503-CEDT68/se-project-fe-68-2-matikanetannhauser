@@ -11,7 +11,7 @@ import RestaurantHomeClient from "./RestaurantHomeClient";
 export default async function RestaurantsPage() {
 
     const h = await headers();
-    const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants`, {
+    const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants`, {
         cache: 'no-store',
         headers: {
             cookie: h.get("cookie") ?? "",
@@ -39,6 +39,8 @@ export default async function RestaurantsPage() {
       const ratingMap = Object.fromEntries(
         ratings.map(r => [r._id.toString(), r.avgStar])
       );
+
+      console.log("Res",restaurantsData);
 
     return (
         <>

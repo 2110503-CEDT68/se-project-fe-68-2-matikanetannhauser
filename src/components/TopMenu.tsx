@@ -4,7 +4,7 @@ import { getUser } from "@/lib/getUser";
 
 export default async function TopMenu() {
     const user = await getUser();
-    // console.log("HELLO", user);
+    console.log("HELLO", user);
     return (
   <ul className="h-[150px] flex justify-end items-center px-15 gap-4">
     <TopMenuItem title="HOME" pageRef="/" cstart="#E8D9D9" cend="#3A231E"/>

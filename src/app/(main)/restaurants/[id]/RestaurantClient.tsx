@@ -17,10 +17,10 @@ export default function RestaurantClient({user,restaurants,rating}:{user:UserTyp
     const handleDelete = async () => {
       try {
             const [restaurantResp, reservationsResp] = await Promise.all([
-              fetch(`/api/restaurants/${restaurants._id.toString()}`, {
+              fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${restaurants._id.toString()}`, {
                 method: "DELETE",
               }),
-              fetch(`/api/restaurants/${restaurants._id.toString()}/reservations`, {
+              fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${restaurants._id.toString()}/reservations`, {
                 method: "DELETE",
               }),
             ])
@@ -100,7 +100,7 @@ export default function RestaurantClient({user,restaurants,rating}:{user:UserTyp
 
                 <img src={restaurants.imgsrc} className=" rounded-3xl w-full h-96 object-cover border-2 border-white shadow-[0_20px_20px_rgba(0,0,0,0.6)]" />
                 
-                <div className="flex justify-start items-center flex-1 gap-15 [text-shadow:0_4px_20px_rgba(0,0,0,1)]">
+                <div className="flex mt-10 justify-start items-center flex-1 gap-15 [text-shadow:0_4px_20px_rgba(0,0,0,1)]">
                     <h1 className=" ml-30 pr-15 text-[60px] border-r-1 border-black">{restaurants.name}</h1>
                     <h1 className=" text-[30px]">{restaurants.address} Tel: {restaurants.tel} </h1>
                 </div>
