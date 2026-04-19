@@ -38,7 +38,7 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
       imgsrc,
     };
 
-    const resp = await fetch(`/api/restaurants/${id}`, {
+    const resp = await fetch(`${process.env.BACKEND_URL}/api/restaurants/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -88,8 +88,13 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
 
 
               <h1 className="absolute top-[-80px] left-[16px] z-10 text-[2.5rem] font-bold">Restaurant</h1>
+
+              <img
+                src="/images/kaopad.png"
+                className="absolute right-20 top-0 w-130 h-130 object-contain z-0"
+              />
               
-              <div className="flex flex-col gap-3 p-7 border-2 border-black h-full rounded-2xl">
+              <div className="flex flex-col gap-3 p-7 border-2 border-black h-full rounded-2xl z-3">
 
                 
                 <label>Name <TextField
@@ -135,7 +140,7 @@ export default function EditsrestaurantClient({restaurants}:{restaurants:Restaur
                   <Box
                     sx={{
                       display: 'flex',
-                      gap: 5,
+                      gap: 2,
                       justifyContent: 'flex-end',
                       alignItems: 'center',
                       mt: 'auto',

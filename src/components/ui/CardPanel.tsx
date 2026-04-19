@@ -23,7 +23,7 @@ export default async function CardPanel() {
   );
 
     const h = await headers();
-      const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants`, {
+      const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants`, {
           cache: 'no-store',
           headers: {
               cookie: h.get("cookie") ?? "",

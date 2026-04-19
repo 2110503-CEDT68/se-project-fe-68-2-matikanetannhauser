@@ -3,14 +3,21 @@ import Container from "@/components/ui/container";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import mongoose from "mongoose";
 
 type Reserve = {
-    restaurantName: string,
+    _id: mongoose.Types.ObjectId,
     startDateTime: string,
     endDateTime: string,
-    restaurantAddress: string,
-    openTime: string,
-    closeTime: string,
+    user: mongoose.Types.ObjectId,
+    restaurant: {
+        _id: mongoose.Types.ObjectId,
+        name: string,
+        address: string,
+        id: string,
+        openTime: string,
+        closeTime: string
+    }
 }
 
 function formatDateInput(value: string) {
@@ -43,6 +50,7 @@ export default function EditReserve({id, initReservation}:{id: string, initReser
     const [endTime, setEndTime] = useState(formatTimeInput(initReservation.endDateTime));
     const [date, setDate] = useState(formatDateInput(initReservation.startDateTime));
     console.log(reservation);
+    const restaurant = reservation.restaurant;
     const handleSave = async () => {
         try {
             // console.log({ date, startTime, endTime })
@@ -74,9 +82,9 @@ export default function EditReserve({id, initReservation}:{id: string, initReser
     
     return (
         <Container className="sm:col-span-2 bg-white ">
-            <p>Restaurant Name: {reservation.restaurantName ?? "Unknown"}</p>
-            <p>Reserved Address: {reservation.restaurantAddress ?? "Unknown"}</p>
-            <p>Available Time: {reservation.openTime ?? "Unknown"} - {reservation.closeTime ?? "Unknown"}</p>
+            <p>Restaurant Name: {restaurant.name ?? "Unknown"}</p>
+            <p>Reserved Address: {restaurant.address ?? "Unknown"}</p>
+            <p>Available Time: {restaurant.openTime ?? "Unknown"} - {restaurant.closeTime ?? "Unknown"}</p>
             <span className="space-x-2">
                 <label htmlFor="reserve-date">Reserve Date: </label>
                 <input id='reserve-date' type='date' className="border" value={date} onChange={(e) => setDate(e.target.value)}/>
@@ -89,7 +97,7 @@ export default function EditReserve({id, initReservation}:{id: string, initReser
                 <label htmlFor="reserve-end">End:</label>
                 <input id='reserve-end' type='time' className="border" value={endTime} onChange={(e) => setEndTime(e.target.value)}/>
             </span>
-            <div className="flex justify-end ">
+            <div className="flex justify-end">
                 <Button onClick={() => {
                     handleSave()
                 }}>Save</Button>

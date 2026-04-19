@@ -1,72 +1,141 @@
-import Restaurant from "@/models/Restaurant";
-import { connectDB } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import Reservation from "@/models/Reservation";
+import { getUser } from "@/lib/getUser";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
-  await connectDB();
+    try {
+        // const session = await getServerSession(authOptions);
+        const user = await getUser();
+        // console.log(user);
+        if(!user) {
+            return NextResponse.json({
+                success: false, 
+                message: 'Not authorized',
+            }, {
+                status: 401
+            });
+        }
+        
+        // const user = session.user as UserType;
+        console.log(user);
+        console.log(user._id.toString());
+        
+        await connectDB();
+        let query;
+    
+        if(user.role !== 'admin') {
+            // query = Reservation.find({user: user.id}).populate({
+            //     path: 'restaurant',
+            //     select: 'name address tel'
+            // })
+            query = Reservation.aggregate([
+                {$match: {
+                    user: user._id
+                }},
+                {$lookup: {
+                    from: 'restaurants',
+                    localField: 'restaurant',
+                    foreignField: '_id',
+                    as: 'restaurantData'
+                }},
+                {$unwind: '$restaurantData'},
+                {$lookup: {
+                    from: 'users',
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'userData'
+                }},
+                {$unwind: '$userData'},
+                {$addFields: {
+                    userName: '$userData.name',
+                    restaurantName: '$restaurantData.name'
+                }},
+                {$unset: ['restaurantData', 'userData']}
+            ]);
+        } else {
+            query = Reservation.aggregate([
+                {$lookup: {
+                    from: 'restaurants',
+                    localField: 'restaurant',
+                    foreignField: '_id',
+                    as: 'restaurantData'
+                }},
+                {$unwind: '$restaurantData'},
+                {$lookup: {
+                    from: 'users',
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'userData'
+                }},
+                {$unwind: '$userData'},
+                {$addFields: {
+                    userName: '$userData.name',
+                    restaurantName: '$restaurantData.name'
+                }},
+                {$unset: ['restaurantData', 'userData']}
+            ]);
+        }
+    
+        const reservations = await query;
 
-  try {
-
-    const { searchParams } = new URL(req.url);
-
-    const select = searchParams.get("select");
-    const sort = searchParams.get("sort");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "25");
-
-    let query: any = Restaurant.find();
-
-    if (select) {
-      query = query.select(select.split(",").join(" "));
+        return NextResponse.json({
+            success: true,
+            count: reservations.length,
+            data: reservations
+        }, {
+            status: 200
+        })
+    } catch(err) {
+        console.error(err);
+        return NextResponse.json({
+            success: false, 
+            message: 'Internal Server Error',
+        }, {
+            status: 500
+        })
     }
 
-    if (sort) {
-      query = query.sort(sort.split(",").join(" "));
-    } else {
-      query = query.sort("-createdAt");
-    }
-
-    const startIndex = (page - 1) * limit;
-    const total = await Restaurant.countDocuments();
-
-    query = query.skip(startIndex).limit(limit);
-
-    const restaurants = await query;
-
-    return NextResponse.json({
-      success: true,
-      count: restaurants.length,
-      data: restaurants,
-    });
-  } catch (err) {
-    return NextResponse.json({ success: false }, { status: 500 });
-  }
 }
 
 export async function POST(req: NextRequest) {
-  await connectDB();
+    try {
+        const token = (await cookies()).get('token')?.value;
+        if(!token || token === 'null') {
+            return NextResponse.json({
+                    success: false,
+                    message: 'Not authorized',
+                },
+                {
+                    status: 401,
+                }
+            );
+        }
+        const body = await req.json();
+        // console.log(body);
+        const resp = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/restaurants`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(body),
+        });
+        const data = await resp.json().catch(() => null);
 
-  try {
-    const body = await req.json();
-    const restaurant = await Restaurant.create(body);
+        // console.log(data);
 
-    return NextResponse.json(
-      { success: true, data: restaurant },
-      { status: 201 }
-    );
-  } catch (err: any) {
-    if (err.name === "ValidationError") {
-      const errors = Object.values(err.errors).map((e: any) => e.message);
-      return NextResponse.json({ success: false, errors }, { status: 400 });
+        return NextResponse.json(data, {
+            status: resp.status
+        });
+    } catch(err) {
+        console.log(err);
+        return NextResponse.json({
+            success: false,
+            message: 'Cannot create Restaurant'
+        }, {
+            status: 500
+        });
     }
-
-    if (err.code === 11000) {
-      return NextResponse.json(
-        { success: false, message: "Restaurant name already exists" },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({ success: false }, { status: 500 });
-  }
 }

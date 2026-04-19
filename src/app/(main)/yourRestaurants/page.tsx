@@ -6,7 +6,9 @@ import { Box } from "@mui/material";
 import Card from "@/components/ui/Card";
 import Comment from "@/models/comment";
 import { connectDB } from "@/lib/db";
+import { AddRestaurantCard } from "@/components/AddRestaurantCard";
 import RestaurantHomeClient from "./RestaurantHomeClient";
+import { getUser } from "@/lib/getUser";
 
 export default async function RestaurantsPage() {
 
@@ -22,8 +24,15 @@ export default async function RestaurantsPage() {
     }
     const restaurantsData = await restaurantsRes.json();
     const restaurants = restaurantsData.data;
-    
-    // console.log(restaurants);
+
+    const user = await getUser();
+
+    const filteredRestaurants = restaurants.filter(
+        (r: any) => r.owner?._id === user._id.toString()
+    );
+
+    // console.log(reservationsRes);
+    // console.log(reservations);
 
       await connectDB();
     
@@ -39,6 +48,9 @@ export default async function RestaurantsPage() {
       const ratingMap = Object.fromEntries(
         ratings.map(r => [r._id.toString(), r.avgStar])
       );
+
+      console.log("Res",restaurantsData);
+
     return (
         <>
         <Light/>
@@ -57,7 +69,7 @@ export default async function RestaurantsPage() {
 
             <div className="absolute max-w-5xl w-full h-154 justify-center py-8 px-8 z-30 mr-[600px] mt-[15px] overflow-auto bg-white rounded-3xl border-2 border-black  no-scrollbar">
                 <Box className="grid grid-cols-2 justify-center gap-10 w-full">
-                {restaurants.map((it: any) => (
+                {filteredRestaurants.map((it: any) => (
 
                     <Link href={`/restaurants/${it._id}`} key={it._id}>
                     <Card restaurant={it} ratingMap={ratingMap} />

@@ -14,11 +14,11 @@ const AddRestaurantCard = ({closeCard}:{closeCard: () => void}) => {
                 name: formData.get("name"),
                 address: formData.get("address"),
                 imgsrc: formData.get("imgsrc"),
-                tel: formData.get("tel"),
+                telephone: formData.get("tel"),
                 openTime: formData.get("openTime"),
-                closeTime: formData.get("closeTime"),
+                closeTime: formData.get("closeTime")
             }
-            // console.log(payload);
+            console.log(payload);
             const resp = await fetch(`/api/restaurants`, {
                 method: 'POST',
                 headers: {

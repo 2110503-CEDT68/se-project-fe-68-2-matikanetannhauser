@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import { type Session } from "next-auth";
-import { type RestaurantType } from "@/types/types";
+import type { RestaurantType, UserType } from "@/types/types";
 
 type CustomUser = NonNullable<Session['user']> & {
     telephone: string,
@@ -14,13 +14,10 @@ type CustomUser = NonNullable<Session['user']> & {
     email: string,
 } | undefined;
 
-const AddReserveCard = ({restaurant, closeCard}:{restaurant:RestaurantType, closeCard: () => void}) => {
+const AddReserveCard = ({user, restaurant, closeCard}:{user: UserType, restaurant:RestaurantType, closeCard: () => void}) => {
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [date, setDate] = useState('');
-    const {data:session} = useSession();
-    console.log("User Session", session);
-    const user = session?.user as CustomUser;
     const handleCreate = async () => {
         try {
             // console.log({ date, startTime, endTime })
@@ -28,7 +25,7 @@ const AddReserveCard = ({restaurant, closeCard}:{restaurant:RestaurantType, clos
                 startDateTime: `${date}T${startTime}:00`,
                 endDateTime: `${date}T${endTime}:00`,
             }
-            const resp = await fetch(`/api/restaurants/${restaurant._id}/reservations`, {
+            const resp = await fetch(`/api/restaurants/${restaurant._id.toString()}/reservations`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

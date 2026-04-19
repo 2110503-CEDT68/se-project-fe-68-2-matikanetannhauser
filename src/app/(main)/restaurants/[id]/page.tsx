@@ -1,31 +1,40 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import Light from "@/components/ui/Light"
 import RestaurantClient from "./RestaurantClient";
 import Comment from "@/models/comment";
 import { connectDB } from "@/lib/db";
+import { getUser } from "@/lib/getUser";
 
 export default async function RestaurantsPage({params}: {params: Promise<{id: string}>}) {
     const { id } = await params;
-    const h = await headers();
-    const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`, {
-        cache: 'no-store',
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    const user = await getUser();
+
+    const res = await fetch(`${process.env.BACKEND_URL}/api/v1/auth/me`, {
         headers: {
-            cookie: h.get("cookie") ?? "",
+            Authorization: `Bearer ${token}`
         }
     });
 
+    const data = await res.json();
+    const role = user?.role || null;
+
+    const h = await headers();
+    const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${id}`, {
+        cache: 'no-store',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+    });
     
     if(!restaurantsRes.ok) {
-        // console.log("restaurantsRes :",restaurantsRes)
-        // console.log("Incoming ID:", id);
-        // console.log("Type:", typeof id);
         notFound();
     }
     const restaurantsData = await restaurantsRes.json();
     const restaurants = restaurantsData.data;
-    // console.log(reservationsRes);
-    // console.log(reservations);
 
     await connectDB();
 
@@ -49,7 +58,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     return (
         <>
             <Light/>
-            <RestaurantClient restaurants={restaurants} rating={avgStar}/>
+            <RestaurantClient token={token} restaurants={restaurants} rating={avgStar} role={role} user={user}/>
         </>
     )
 }

@@ -4,13 +4,15 @@ import Light from "@/components/ui/Light"
 import EditsrestaurantClient from "@/app/(main)/restaurants/[id]/edit/EditsrestaurantClient";
 import Comment from "@/models/comment";
 import { connectDB } from "@/lib/db";
+import { getUser } from "@/lib/getUser";
 
 export default async function RestaurantsPage({params}: {params: Promise<{id: string}>}) {
 
     const { id } = await params;
+    const user = await getUser();
 
     const h = await headers();
-    const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`, {
+    const restaurantsRes = await fetch(`${process.env.BACKEND_URL}/api/v1/restaurants/${id}`, {
         cache: 'no-store',
         headers: {
             cookie: h.get("cookie") ?? "",
@@ -26,7 +28,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     return (
         <>
             <Light/>
-            <EditsrestaurantClient restaurants={restaurants}/>
+            <EditsrestaurantClient user={user} restaurants={restaurants}/>
         </>
     )
 }

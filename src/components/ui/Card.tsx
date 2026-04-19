@@ -10,7 +10,9 @@ export default function Card({
   restaurant: RestaurantType , ratingMap:Record<string, number>;
 }) {
 
-  const avgStar = ratingMap[restaurant._id] || 0;
+  const avgStar = ratingMap[restaurant._id.toString()] || 0;
+
+  // console.log("This is restaurant card", restaurant);
 
   return (
     <InteractiveCard>

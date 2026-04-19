@@ -48,7 +48,7 @@ export default function RestaurantsPage() {
   useEffect(() => {
     if (redirect) {
       const timer = setTimeout(() => {
-        router.push("/api/auth/signin");
+        router.push("/login");
       }, 1200);
 
       return () => clearTimeout(timer);
@@ -76,7 +76,7 @@ export default function RestaurantsPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/signup", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,6 +104,7 @@ export default function RestaurantsPage() {
 
     } catch (err) {
       toast.error("Network error");
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -111,7 +112,7 @@ export default function RestaurantsPage() {
 
   return (
     <main className="flex justify-center items-center h-screen bg-[#161b22]">
-      <div className="flex flex-col rounded-3xl w-[700px] bg-[#0d1117] p-10 gap-10">
+      <div className="flex flex-col rounded-3xl w-175 bg-[#0d1117] p-10 gap-10">
         <div className="grid grid-cols-2 gap-6">
           <CreateBar
             txt="Email"

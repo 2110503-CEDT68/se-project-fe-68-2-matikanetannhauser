@@ -7,7 +7,7 @@ export default function TopMenuItem({ title, pageRef, cstart, cend }: { title: s
           hover:scale-105 hover:shadow-xl" 
           style={{ background: `linear-gradient(to top right, ${cstart}, ${cend})`,}}>
 
-        <div className=" h-[100%] border-[1px] border-white rounded-lg  text-center flex items-center justify-center text-2xl ">
+        <div className=" h-[100%] border-[1px] border-white rounded-lg  text-center flex items-center justify-center text-l ">
           {title}
         </div>
 
