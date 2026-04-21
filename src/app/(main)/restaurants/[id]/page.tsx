@@ -34,7 +34,7 @@ async function FetchData(id:string,link:string) {
         notFound();
     }
     const restaurantsData = await restaurantsRes.json();
-    console.log("restaurantsData:", restaurantsData);
+    console.log("EachrestaurantsData:", restaurantsData);
     const restaurants = restaurantsData.data.data;
 
     const result = await Comment.aggregate([
