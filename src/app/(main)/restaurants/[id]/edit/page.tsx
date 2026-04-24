@@ -9,6 +9,8 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     const { id } = await params;
     const user = await getUser();
 
+    console.log("url",`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/restaurants/${id}`)
+
     const h = await headers();
     const restaurantsRes = await fetch(`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`, {
         cache: 'no-store',
@@ -22,7 +24,7 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
         notFound();
     }
     const restaurantsData = await restaurantsRes.json();
-    const restaurants = restaurantsData.data;
+    const restaurants = restaurantsData.data.data;
 
     return (
         <>

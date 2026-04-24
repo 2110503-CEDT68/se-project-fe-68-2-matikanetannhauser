@@ -14,7 +14,6 @@ export default function EditsrestaurantClient({user,restaurants}:{user:any,resta
     const [showCard, setShowCard] = useState(false);
     const session = useSession();
     const pathname = usePathname();
-    console.log(session);
     const role = session.data?.user?.role;
     const router = useRouter();
 
@@ -38,7 +37,7 @@ export default function EditsrestaurantClient({user,restaurants}:{user:any,resta
       imgsrc,
     };
 
-    const resp = await fetch(`${process.env.BACKEND_URL}/api/restaurants/${id}`, {
+    const resp = await fetch(`/api/restaurants/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

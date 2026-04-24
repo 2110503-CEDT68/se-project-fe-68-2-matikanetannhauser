@@ -14,7 +14,7 @@ export function RestaurantAlertRemove({handleDelete}:{handleDelete: () => void})
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="w-40 h-12 text-white bg-red-400 text-[30px] rounded-xl [text-shadow:0_0_20px_white,0_0_60px_rgba(255,255,255,1),0_0_100px_rgba(255,255,255,0.8)] font-bold
+        <button className="w-45 h-15 text-white bg-red-400 text-[30px] rounded-lg [text-shadow:0_0_20px_white,0_0_60px_rgba(255,255,255,1),0_0_100px_rgba(255,255,255,0.8)] font-bold
           transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl"
             onClick={(e) => {
               

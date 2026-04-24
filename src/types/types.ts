@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Date } from "mongoose";
 import NextAuth, { DefaultSession } from "next-auth";
 
 export type UserType = {
-    id: string,
+    _id: string,
     name: string,
     sub: string,
     email: string,
@@ -23,9 +23,20 @@ export type RestaurantType = {
     imgsrc: string,
     name: string,
     address: string,
+    comments: CommentType[],
     telephone:string,
     openTime: string,
     closeTime: string,
+}
+
+export type CommentType = {
+    _id: mongoose.Types.ObjectId
+    text: string,
+    rating: number,
+    restaurant: ReservationType,
+    user: UserType,
+    createdAt: Date,
+    updatedAt: Date,
 }
 
 declare module "next-auth" {

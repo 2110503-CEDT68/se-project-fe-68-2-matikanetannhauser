@@ -12,12 +12,13 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
     const { id } = await params;
     const token = (await cookies()).get("token")?.value;
     const user = await getUser();
-    const { restaurants , avgStar } = await FetchData(id,`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`)
+    const { restaurant , rating } = await FetchData(id,`${process.env.NEXTAUTH_URL}/api/restaurants/${id}`)
+    console.log(`${rating}`)
 
     return (
         <>
             <Light/>
-            <EachRestaurantClient token={token} restaurants={restaurants} rating={avgStar} user={user}/>
+            <EachRestaurantClient token={token} restaurants={restaurant} rating={rating} user={user}/>
 
         </>
     )
@@ -25,35 +26,28 @@ export default async function RestaurantsPage({params}: {params: Promise<{id: st
 
 async function FetchData(id:string,link:string) {
 
-    await connectDB();
-    const restaurantsRes = await fetch(link, {
+    type Comment = {
+      rating: number;
+    };
+
+    const restaurantRes = await fetch(link, {
         cache: 'no-store',
     });
     
-    if(!restaurantsRes.ok) {
+    if(!restaurantRes.ok) {
         notFound();
     }
-    const restaurantsData = await restaurantsRes.json();
-    console.log("EachrestaurantsData:", restaurantsData);
-    const restaurants = restaurantsData.data.data;
+    const restaurantData = await restaurantRes.json();
+    const restaurant = restaurantData.data.data;
+    console.log("ThisRestaurantsData:", restaurant);
 
-    const result = await Comment.aggregate([
-    {
-        $match: {
-        r_id: id,
-        },
-    },
-    {
-        $group: {
-        _id: "$r_id",
-        avgStar: { $avg: "$star" },
-        count: { $sum: 1 },
-        },
-    },
-    ]);
+    const comments = restaurant?.comments ?? [];
 
-    const avgStar = result[0]?.avgStar || 0;
+    const rating =
+    comments.length > 0
+        ? comments.reduce((acc:any, c:any) => acc + c.rating, 0) / comments.length
+        : 0;
 
-    return { restaurants , avgStar }
+    return { restaurant , rating }
 
 }
