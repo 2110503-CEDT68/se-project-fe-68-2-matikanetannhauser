@@ -65,6 +65,8 @@ export async function PUT(req: NextRequest, {params}:{params: Promise<{id: strin
             body: JSON.stringify(body),
         });
         const data = await resp.json().catch(() => null);
+        console.log(body);
+        console.log(data);
 
         return NextResponse.json(data, {
             status: resp.status

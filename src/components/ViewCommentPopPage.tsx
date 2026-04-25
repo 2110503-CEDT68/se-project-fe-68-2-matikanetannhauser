@@ -12,7 +12,6 @@ import { useState } from "react";
  const ViewCommentPopPage = ({restaurants,user,closeCard}:{restaurants:RestaurantType,user: UserType,closeCard: () => void} ) => {
     const router = useRouter();
 
-    console.log("user is",user)
     const [editing, setEditing] = useState(false);
     const [textVal, setTextVal] = useState("");
     const [starVal, setStarVal] = useState(0);
@@ -33,7 +32,6 @@ import { useState } from "react";
                 rating: formData.get("rating"),
                 user: user,
             }
-            console.log(payload);
             const resp = await fetch(`/api/restaurants/${restaurants._id}/comments`, {
                 method: 'POST',
                 headers: {
@@ -69,7 +67,7 @@ import { useState } from "react";
             if(!resp.ok) {
                 throw new Error(data.message || "Failed to delete");
             }
-            toast.success("Create success!", {position: 'top-center'})
+            toast.success("Delete success!", {position: 'top-center'})
             router.refresh()
 
         } catch(err) {
@@ -102,7 +100,7 @@ import { useState } from "react";
             
             const data = await resp.json();
             if(!resp.ok) {
-                throw new Error(data.message || "Failed to create");
+                throw new Error(data.message || "Failed to save");
             }
             toast.success("Save success!", {position: 'top-center'})
             closeCard();
@@ -128,8 +126,6 @@ import { useState } from "react";
 
     return bIsMine - aIsMine;
     });
-
-    console.log(restaurants.comments);
     return (
         <div className="z-50 fixed inset-0 bg-black/50 flex justify-center items-center h-dvh w-dvw">
             <form action={handleSubmit}>
