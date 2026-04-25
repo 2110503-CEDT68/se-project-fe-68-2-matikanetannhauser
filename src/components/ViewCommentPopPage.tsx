@@ -7,10 +7,23 @@ import { Rating } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { PencilLine, Trash2 } from "lucide-react";
 import { AlertRemove } from "./AlertRemove";
+import { useState } from "react";
 
  const ViewCommentPopPage = ({restaurants,user,closeCard}:{restaurants:RestaurantType,user: UserType,closeCard: () => void} ) => {
     const router = useRouter();
     console.log("user is",user)
+    const [editing, setEditing] = useState(false);
+    const [textVal, setTextVal] = useState("");
+    const [starVal, setStarVal] = useState(0);
+    const [curEditing, setCurEditing] = useState<string|null>(null);
+
+    const resetStates = () => {
+        setEditing(false);
+        setTextVal("");
+        setStarVal(0);
+        setCurEditing(null);
+    }
+
     const handleCreate = async (formData: FormData) => {
         
         try {
@@ -67,6 +80,47 @@ import { AlertRemove } from "./AlertRemove";
         }
     }
 
+    const handleSaveComment = async (formData: FormData) => {
+        try {
+            const payload = {
+                text: formData.get("comment"),
+                rating: formData.get("rating"),
+                user: user,
+            }
+            if(!curEditing) {
+                toast.error("No editing comment");
+                return;
+            }
+            const resp = await fetch(`/api/comments/${curEditing}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await resp.json();
+            if(!resp.ok) {
+                throw new Error(data.message || "Failed to create");
+            }
+            toast.success("Save success!", {position: 'top-center'})
+            closeCard();
+            router.refresh()
+
+        } catch(err) {
+            console.log(err);
+            toast.error("Failed to save", {
+                position: 'top-center',
+                description: err instanceof Error ? err.message : "Something went wrong.",
+            });
+        }
+    }
+
+    const handleSubmit = (formData: FormData) => {
+        if(editing) handleSaveComment(formData);
+        else handleCreate(formData);
+    }
+
     const sortedComments = [...restaurants.comments].sort((a, b) => {
     const aIsMine = a.user._id === user._id ? 1 : 0;
     const bIsMine = b.user._id === user._id ? 1 : 0;
@@ -75,10 +129,9 @@ import { AlertRemove } from "./AlertRemove";
     });
 
     console.log(restaurants.comments);
-
     return (
         <div className="z-50 fixed inset-0 bg-black/50 flex justify-center items-center h-dvh w-dvw">
-            <form action={handleCreate}>
+            <form action={handleSubmit}>
                 <div className="flex flex-col pt-12 px-15 pb-10 w-[1300px] h-[760px] bg-white rounded-md p-4 shadow font-bold">
 
                     <div className="flex justify-between ">
@@ -88,7 +141,10 @@ import { AlertRemove } from "./AlertRemove";
 
                             <div className="flex flex-row gap-3 [text-shadow:0_4px_20px_rgba(0,0,0,1)] ">
                                 <div className=" w-full flex flex-col items-end ">
-                                    <input id='comment' name='comment' placeholder="Add Comment Here....." className="text-xl h-[40px] w-[100%] border-b border-gray-500" required />
+                                    <input id='comment' name='comment' placeholder="Add Comment Here....." className="text-xl h-[40px] w-[100%] border-b border-gray-500" required 
+                                        value={textVal}
+                                        onChange={(e) => setTextVal(e.target.value)}
+                                    />
                                     <h1 className="text-gray-500 w-fit ">0/500</h1>
                                 </div>
                                 <div className="flex flex-col gap-3 [text-shadow:0_4px_20px_rgba(0,0,0,1)] ">
@@ -115,8 +171,16 @@ import { AlertRemove } from "./AlertRemove";
 
                                             
                                         }}
+                                        value={starVal}
+                                        onChange={(e, nval) => setStarVal(nval || 0)}
                                         />
-                                    <Button variant={'outline'} className="h-[50px] text-xl text-white [text-shadow:0_4px_20px_rgba(255,255,255,0.3)] w-full bg-black" type='submit'>Submit</Button>
+                                    <div className="flex gap-3">
+                                        {editing && <Button variant={'ghost'} onClick={resetStates}
+                                            className="h-full"
+                                            type="button"
+                                        >Cancel</Button>}
+                                        <Button variant={'outline'} className="h-[50px] text-xl text-white [text-shadow:0_4px_20px_rgba(255,255,255,0.3)] flex-1 bg-black" type='submit'>Submit</Button>
+                                    </div>
                                 </div>
                             </div>
                             <Button variant={'destructive'} onClick={closeCard} className="absolute top-0 right-0">X</Button>
@@ -165,15 +229,22 @@ import { AlertRemove } from "./AlertRemove";
                                         />
                                         {(user && user._id===it.user._id) && (
                                             <>
-                                                <Button type='button' variant={'ghost'}><PencilLine/></Button>
-                                                <AlertRemove
-                                                    title={'Remove Comment'}
-                                                    description={'This action cannot be undone. This will permanently delete this comment data from our servers.'}
-                                                    action={() => handleDeleteComment(it._id.toString())}
-                                                >
-                                                    <Button variant={'destructive'}><Trash2/></Button>
-                                                </AlertRemove>
+                                                <Button type='button' variant={'ghost'} onClick={() => {
+                                                    setEditing(true)
+                                                    setTextVal(it.text)
+                                                    setStarVal(it.rating);
+                                                    setCurEditing(it._id.toString())
+                                                }}><PencilLine/></Button>
                                             </>
+                                        )}
+                                        {user && (user._id===it.user._id || ['admin'].includes(user.role)) && (
+                                            <AlertRemove
+                                                title={'Remove Comment'}
+                                                description={'This action cannot be undone. This will permanently delete this comment data from our servers.'}
+                                                action={() => handleDeleteComment(it._id.toString())}
+                                            >
+                                                <Button variant={'destructive'}><Trash2/></Button>
+                                            </AlertRemove>
                                         )}
                                     </div>
                                     <h1>{it.text}</h1>
