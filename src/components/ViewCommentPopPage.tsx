@@ -5,13 +5,30 @@ import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { Rating } from "@mui/material";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { PencilLine, Trash2 } from "lucide-react";
+import { AlertRemove } from "./AlertRemove";
+import { useState } from "react";
+
+type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
+type FilterRating = 0 | 1 | 2 | 3 | 4 | 5;
 
  const ViewCommentPopPage = ({restaurants,user,closeCard}:{restaurants:RestaurantType,user: UserType,closeCard: () => void} ) => {
     const router = useRouter();
 
-    console.log("user is",user)
-    const [comment, setComment] = React.useState("");
+    const [editing, setEditing] = useState(false);
+    const [textVal, setTextVal] = useState("");
+    const [starVal, setStarVal] = useState(0);
+    const [curEditing, setCurEditing] = useState<string|null>(null);
+    const [sortBy, setSortBy] = useState<SortOption>("most_recent");
+    const [filterRating, setFilterRating] = useState<FilterRating>(0);
+
+    const resetStates = () => {
+        setEditing(false);
+        setTextVal("");
+        setStarVal(0);
+        setCurEditing(null);
+    }
+
     const handleCreate = async (formData: FormData) => {
         
         try {
@@ -20,7 +37,6 @@ import React from "react";
                 rating: formData.get("rating"),
                 user: user,
             }
-            console.log(payload);
             const resp = await fetch(`/api/restaurants/${restaurants._id}/comments`, {
                 method: 'POST',
                 headers: {
@@ -46,18 +62,94 @@ import React from "react";
         }
     }
 
-    const sortedComments = [...restaurants.comments].sort((a, b) => {
-    const aIsMine = a.user._id === user._id ? 1 : 0;
-    const bIsMine = b.user._id === user._id ? 1 : 0;
+    const handleDeleteComment = async (id: string) => {
+        try {
+            const resp = await fetch(`/api/comments/${id}`, {
+                method: 'DELETE',
+            });
+            
+            const data = await resp.json();
+            if(!resp.ok) {
+                throw new Error(data.message || "Failed to delete");
+            }
+            toast.success("Delete success!", {position: 'top-center'})
+            router.refresh()
 
-    return bIsMine - aIsMine;
+        } catch(err) {
+            console.log(err);
+            toast.error("Failed to delete", {
+                position: 'top-center',
+                description: err instanceof Error ? err.message : "Something went wrong.",
+            });
+        }
+    }
+
+    const handleSaveComment = async (formData: FormData) => {
+        try {
+            const payload = {
+                text: formData.get("comment"),
+                rating: formData.get("rating"),
+                user: user,
+            }
+            if(!curEditing) {
+                toast.error("No editing comment");
+                return;
+            }
+            const resp = await fetch(`/api/comments/${curEditing}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await resp.json();
+            if(!resp.ok) {
+                throw new Error(data.message || "Failed to save");
+            }
+            toast.success("Save success!", {position: 'top-center'})
+            closeCard();
+            router.refresh()
+
+        } catch(err) {
+            console.log(err);
+            toast.error("Failed to save", {
+                position: 'top-center',
+                description: err instanceof Error ? err.message : "Something went wrong.",
+            });
+        }
+    }
+
+    const handleSubmit = (formData: FormData) => {
+        if(editing) handleSaveComment(formData);
+        else handleCreate(formData);
+    }
+
+    const sortedComments = [...restaurants.comments]
+    .filter((c) => filterRating === 0 || Math.floor(c.rating) === filterRating)
+    .sort((a, b) => {
+        // Always pin the current user's comment to the top first
+        const aIsMine = a.user._id === user._id ? 1 : 0;
+        const bIsMine = b.user._id === user._id ? 1 : 0;
+        if (bIsMine !== aIsMine) return bIsMine - aIsMine;
+
+        // Then apply the selected sort within each group
+        if (sortBy === "most_recent") {
+            // FIX: Using unary plus or casting to any to bypass the TS Date overload error
+            return new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime();
+        }
+        if (sortBy === "highest_rating") {
+            return b.rating - a.rating;
+        }
+        if (sortBy === "lowest_rating") {
+            return a.rating - b.rating;
+        }
+        return 0;
     });
-
-    console.log(restaurants.comments);
 
     return (
         <div className="z-50 fixed inset-0 bg-black/50 flex justify-center items-center h-dvh w-dvw">
-            <form action={handleCreate}>
+            <form action={handleSubmit}>
                 <div className="flex flex-col pt-12 px-15 pb-10 w-[1300px] h-[760px] bg-white rounded-md p-4 shadow font-bold">
 
                     <div className="flex justify-between ">
@@ -67,8 +159,11 @@ import React from "react";
 
                             <div className="flex flex-row gap-3 [text-shadow:0_4px_20px_rgba(0,0,0,1)] ">
                                 <div className=" w-full flex flex-col items-end ">
-                                    <input maxLength={500} onChange={(e) => setComment(e.target.value)} id='comment' name='comment' placeholder="Add Comment Here....." className="text-xl h-[40px] w-[100%] border-b border-gray-500" required />
-                                    <h1 className="text-gray-500 w-fit ">{comment.length}/500 Characters</h1>
+                                    <input maxLength={500} id='comment' name='comment' placeholder="Add Comment Here....." className="text-xl h-[40px] w-[100%] border-b border-gray-500" required 
+                                        value={textVal}
+                                        onChange={(e) => setTextVal(e.target.value)}
+                                    />
+                                    <h1 className={`w-fit ${textVal.length > 450 ? "text-red-500" : "text-gray-500"}`}> {textVal.length}/500 Characters</h1>
                                 </div>
                                 <div className="flex flex-col gap-3 [text-shadow:0_4px_20px_rgba(0,0,0,1)] ">
                                     <Rating
@@ -94,8 +189,16 @@ import React from "react";
 
                                             
                                         }}
+                                        value={starVal}
+                                        onChange={(e, nval) => setStarVal(nval || 0)}
                                         />
-                                    <Button variant={'outline'} className="h-[50px] text-xl text-white [text-shadow:0_4px_20px_rgba(255,255,255,0.3)] w-full bg-black" type='submit'>Submit</Button>
+                                    <div className="flex gap-3">
+                                        {editing && <Button variant={'ghost'} onClick={resetStates}
+                                            className="h-full"
+                                            type="button"
+                                        >Cancel</Button>}
+                                        <Button variant={'outline'} className="h-[50px] text-xl text-white [text-shadow:0_4px_20px_rgba(255,255,255,0.3)] flex-1 bg-black" type='submit'>Submit</Button>
+                                    </div>
                                 </div>
                             </div>
                             <Button variant={'destructive'} onClick={closeCard} className="absolute top-0 right-0">X</Button>
@@ -105,6 +208,30 @@ import React from "react";
                     <div className="flex flex-1">
 
                         <div className="h-full flex flex-col  flex-7 gap-4 overflow-y-scroll">
+
+                            <div className="flex flex-row gap-2">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                >
+                                    <option value="most_recent">Most Recent</option>
+                                    <option value="highest_rating">Highest Rating</option>
+                                    <option value="lowest_rating">Lowest Rating</option>
+                                </select>
+
+                                <select
+                                    value={filterRating}
+                                    onChange={(e) => setFilterRating(Number(e.target.value) as FilterRating)}
+                                >
+                                    <option value={0}>All Ratings</option>
+                                    <option value={1}>1 Star</option>
+                                    <option value={2}>2 Stars</option>
+                                    <option value={3}>3 Stars</option>
+                                    <option value={4}>4 Stars</option>
+                                    <option value={5}>5 Stars</option>
+                                </select>
+                            </div>
+
                             {sortedComments.map((it: CommentType) => (
                                 
                                 <div key={it._id.toString()} className="flex flex-col !w-[96%] !overflow-visible border-b border-gray-500 pb-4 gap-2 overflow-scroll">
@@ -121,7 +248,7 @@ import React from "react";
                                             )}
 
                                         <Rating
-                                        value={it.rating} 
+                                        value={it.rating}
                                         readOnly
                                         sx={{
                                             zIndex: 2,
@@ -142,6 +269,25 @@ import React from "react";
                                             },
                                         }}
                                         />
+                                        {(user && user._id===it.user._id) && (
+                                            <>
+                                                <Button type='button' variant={'ghost'} onClick={() => {
+                                                    setEditing(true)
+                                                    setTextVal(it.text)
+                                                    setStarVal(it.rating);
+                                                    setCurEditing(it._id.toString())
+                                                }}><PencilLine/></Button>
+                                            </>
+                                        )}
+                                        {user && (user._id===it.user._id || ['admin'].includes(user.role)) && (
+                                            <AlertRemove
+                                                title={'Remove Comment'}
+                                                description={'This action cannot be undone. This will permanently delete this comment data from our servers.'}
+                                                action={() => handleDeleteComment(it._id.toString())}
+                                            >
+                                                <Button variant={'destructive'}><Trash2/></Button>
+                                            </AlertRemove>
+                                        )}
                                     </div>
                                     <h1>{it.text}</h1>
                                 </div>

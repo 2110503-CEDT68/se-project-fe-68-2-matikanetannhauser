@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 
 import Light from "@/components/ui/Light"
 import EachRestaurantClient from "../../../../clientServer/Restaurants/EachRestaurantClient";
-import Comment from "@/models/comment";
-import { connectDB } from "@/lib/db";
 import { getUser } from "@/lib/getUser";
 import { cookies } from "next/headers";
 

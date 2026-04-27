@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db";
 import Comment from "@/models/comment";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
   await connectDB();
@@ -30,12 +31,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(comment);
-}
-
-export async function DELETE(req: NextRequest) {
-    
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
-
-  return NextResponse.json({ message: "Deleted " + id });
 }

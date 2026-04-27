@@ -9,15 +9,10 @@ jest.mock("next/link", () => {
   );
 });
 
-// 2. Mock next-auth COMPLETELY (Avoid jest.requireActual)
-const mockGetServerSession = jest.fn();
-jest.mock("next-auth", () => ({
-  getServerSession: () => mockGetServerSession(),
-}));
-
-// Mock the auth options to avoid path resolution errors
-jest.mock("@/lib/auth", () => ({
-  authOptions: {},
+// 2. Mock getUser directly so next/headers cookies() is never invoked
+const mockGetUser = jest.fn();
+jest.mock("@/lib/getUser", () => ({
+  getUser: () => mockGetUser(),
 }));
 
 // Helper to render the async server component
@@ -33,13 +28,13 @@ describe("TopMenu Component", () => {
 
   describe("Unauthenticated State (Logged Out)", () => {
     beforeEach(() => {
-      // Mock getServerSession returning null (no user)
-      mockGetServerSession.mockResolvedValue(null);
+      // No user — getUser returns null
+      mockGetUser.mockResolvedValue(null);
     });
 
     it("renders core navigation links", async () => {
       await renderTopMenu();
-      
+
       expect(screen.getByText("HOME")).toBeInTheDocument();
       expect(screen.getByText("RESTAURANT")).toBeInTheDocument();
       expect(screen.getByText("RESERVE")).toBeInTheDocument();
@@ -52,11 +47,12 @@ describe("TopMenu Component", () => {
       const loginLink = screen.getByText("LOGIN").closest("a");
 
       expect(registerLink).toHaveAttribute("href", "/register");
-      expect(loginLink).toHaveAttribute("href", "/api/auth/signin");
+      expect(loginLink).toHaveAttribute("href", "/login");
     });
 
     it("does not show the Logout button or username", async () => {
       await renderTopMenu();
+
       expect(screen.queryByText("LOGOUT")).not.toBeInTheDocument();
     });
   });
@@ -65,28 +61,51 @@ describe("TopMenu Component", () => {
     const mockUser = {
       name: "Alice Wonderland",
       email: "alice@test.com",
+      role: "user",
     };
 
     beforeEach(() => {
-      // Mock getServerSession returning a valid session
-      mockGetServerSession.mockResolvedValue({ user: mockUser });
+      // Valid user returned from getUser
+      mockGetUser.mockResolvedValue(mockUser);
     });
 
     it("displays the user's name", async () => {
       await renderTopMenu();
+
       expect(screen.getByText("Alice Wonderland")).toBeInTheDocument();
     });
 
     it("shows the Logout button with correct link", async () => {
       await renderTopMenu();
+
       const logoutLink = screen.getByText("LOGOUT").closest("a");
-      expect(logoutLink).toHaveAttribute("href", "/api/auth/signout");
+      expect(logoutLink).toHaveAttribute("href", "/logout");
     });
 
     it("does not show Login or Register buttons", async () => {
       await renderTopMenu();
+
       expect(screen.queryByText("LOGIN")).not.toBeInTheDocument();
       expect(screen.queryByText("REGISTER")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Owner Role", () => {
+    const mockOwner = {
+      name: "Bob Owner",
+      email: "bob@test.com",
+      role: "owner",
+    };
+
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue(mockOwner);
+    });
+
+    it("shows MY RESTAURANTS link for owner role", async () => {
+      await renderTopMenu();
+
+      const myRestaurantsLink = screen.getByText("MY RESTAURANTS").closest("a");
+      expect(myRestaurantsLink).toHaveAttribute("href", "/yourRestaurants");
     });
   });
 });
