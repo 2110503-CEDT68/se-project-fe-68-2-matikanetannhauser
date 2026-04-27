@@ -19,7 +19,7 @@ export default async function CardPanel() {
 
     const ratingMapObj: Record<string, number> = {};
 
-    result.forEach((item:any) => {
+    result?.forEach((item:any) => {
     ratingMapObj[item.restaurant] = item.rating;
     });
 
