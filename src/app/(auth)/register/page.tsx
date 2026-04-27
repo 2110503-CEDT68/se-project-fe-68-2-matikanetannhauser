@@ -4,6 +4,7 @@ import { TextField } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import PolicyCard from "@/components/PolicyCard";
 
 const whiteTextField = {
   input: { color: "white" },
@@ -30,6 +31,8 @@ export default function RestaurantsPage() {
 
   const [loading, setLoading] = useState(false);
   const [redirect, setRedirect] = useState(false);
+  const [showPolicy, setShowPolicy] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -71,6 +74,10 @@ export default function RestaurantsPage() {
     if (form.password.length < 6) {
       toast.error("Password too short");
       return;
+    }
+
+    if(!checked) {
+      toast.error("Please review and accept the Terms of Service to proceed.")
     }
 
     setLoading(true);
@@ -135,16 +142,23 @@ export default function RestaurantsPage() {
             onChange={(v) => handleChange("password", v)}
           />
         </div>
-
+        <div className="text-white flex gap-x-2 select-none">
+          <input type='checkbox' id='policy' checked={checked} onChange={(e) => {
+            if(!checked) setShowPolicy(true);
+            setChecked((pv) => !pv);
+          }}/>
+          <label htmlFor="policy">Accept terms and conditions</label>
+        </div>
         <button
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || !checked}
           className="h-16 text-white font-bold border border-gray-800 rounded-lg 
           hover:bg-gray-900 transition disabled:opacity-50"
         >
           {loading ? "Loading..." : "Create New User"}
         </button>
       </div>
+      {showPolicy && <PolicyCard action={() => setShowPolicy(false)}/>}
     </main>
   );
 }
