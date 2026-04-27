@@ -14,7 +14,7 @@ export default function Card({
   console.log(restaurant._id," restaurant card contain" ,avgStar ,"star");
 
   return (
-    <InteractiveCard>
+    <InteractiveCard data-testid={`restaurant-card-${restaurant.name}`}>
       <Box className="relative w-full h-full">
         <img
           src={restaurant.imgsrc}

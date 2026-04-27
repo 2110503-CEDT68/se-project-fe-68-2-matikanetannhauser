@@ -9,7 +9,7 @@ export default function RestaurantHomeClient() {
     return (
         <>
             <div className="fixed right-10 bottom-10 transition hover:scale-90 duration-150">
-                <CirclePlus className="size-24 stroke-white fill-amber-400"
+                <CirclePlus className="size-24 stroke-white fill-amber-400" data-testid="add-restaurant-btn"
                     onClick={() => setShowCard(true)}
                 />
             </div>
