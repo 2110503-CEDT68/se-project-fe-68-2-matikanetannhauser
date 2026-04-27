@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import { PencilLine, Trash2 } from "lucide-react";
 import { AlertRemove } from "./AlertRemove";
 import { useState } from "react";
+import { format } from "date-fns";
+
+type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
 
  const ViewCommentPopPage = ({restaurants,user,closeCard}:{restaurants:RestaurantType,user: UserType,closeCard: () => void} ) => {
     const router = useRouter();
@@ -16,6 +19,8 @@ import { useState } from "react";
     const [textVal, setTextVal] = useState("");
     const [starVal, setStarVal] = useState(0);
     const [curEditing, setCurEditing] = useState<string|null>(null);
+    const [sortBy, setSortBy] = useState<SortOption>("most_recent");
+    const [filterRating, setFilterRating] = useState<FilterRating>(0);
 
     const resetStates = () => {
         setEditing(false);
@@ -120,22 +125,38 @@ import { useState } from "react";
         else handleCreate(formData);
     }
 
-    const sortedComments = [...restaurants.comments].sort((a, b) => {
-    const aIsMine = a.user._id === user._id ? 1 : 0;
-    const bIsMine = b.user._id === user._id ? 1 : 0;
-
-    return bIsMine - aIsMine;
+    const sortedComments = [...restaurants.comments]
+    .filter((c) => filterRating === 0 || Math.floor(c.rating) === filterRating)
+    .sort((a, b) => {
+        // Always pin the current user's comment to the top first
+        const aIsMine = a.user._id === user._id ? 1 : 0;
+        const bIsMine = b.user._id === user._id ? 1 : 0;
+        if (bIsMine !== aIsMine) return bIsMine - aIsMine;
+ 
+        // Then apply the selected sort within each group
+        if (sortBy === "most_recent") {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        if (sortBy === "highest_rating") {
+            return b.rating - a.rating;
+        }
+        if (sortBy === "lowest_rating") {
+            return a.rating - b.rating;
+        }
+        return 0;
     });
-    return (
+
+
+        return (
         <div className="z-50 fixed inset-0 bg-black/50 flex justify-center items-center h-dvh w-dvw">
             <form action={handleSubmit}>
                 <div className="flex flex-col pt-12 px-15 pb-10 w-[1300px] h-[760px] bg-white rounded-md p-4 shadow font-bold">
-
+ 
                     <div className="flex justify-between ">
                         <div className="w-[100%] flex flex-col gap-5 [text-shadow:0_4px_20px_rgba(0,0,0,1)]  relative">
                             <h1 className="text-4xl ">Reviews</h1>
                             <h1 className="text-xl ">{user?.name}</h1>
-
+ 
                             <div className="flex flex-row gap-3 [text-shadow:0_4px_20px_rgba(0,0,0,1)] ">
                                 <div className=" w-full flex flex-col items-end ">
                                     <input id='comment' name='comment' placeholder="Add Comment Here....." className="text-xl h-[40px] w-[100%] border-b border-gray-500" required 
@@ -155,17 +176,17 @@ import { useState } from "react";
                                             "& .MuiRating-icon svg": {
                                             strokeWidth: 0.4,
                                             },
-
+ 
                                             "& .MuiRating-iconFilled svg": {
                                             fill: "url(#starGradient)",
                                             stroke: "black",
                                             },
-
+ 
                                             "& .MuiRating-iconEmpty svg": {
                                             fill: "transparent" ,
                                             stroke: "#333",
                                             },
-
+ 
                                             
                                         }}
                                         value={starVal}
@@ -183,27 +204,51 @@ import { useState } from "react";
                             <Button variant={'destructive'} onClick={closeCard} className="absolute top-0 right-0">X</Button>
                         </div>
                     </div>
-
+ 
                     <div className="flex flex-1">
-
+ 
                         <div className="h-full flex flex-col  flex-7 gap-4 overflow-y-scroll">
+ 
+                            <div className="flex flex-row gap-2">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                >
+                                    <option value="most_recent">Most Recent</option>
+                                    <option value="highest_rating">Highest Rating</option>
+                                    <option value="lowest_rating">Lowest Rating</option>
+                                </select>
+ 
+                                <select
+                                    value={filterRating}
+                                    onChange={(e) => setFilterRating(Number(e.target.value) as FilterRating)}
+                                >
+                                    <option value={0}>All Ratings</option>
+                                    <option value={1}>1 Star</option>
+                                    <option value={2}>2 Stars</option>
+                                    <option value={3}>3 Stars</option>
+                                    <option value={4}>4 Stars</option>
+                                    <option value={5}>5 Stars</option>
+                                </select>
+                            </div>
+ 
                             {sortedComments.map((it: CommentType) => (
                                 
                                 <div key={it._id.toString()} className="flex flex-col !w-[96%] !overflow-visible border-b border-gray-500 pb-4 gap-2 overflow-scroll">
                                     <div className="flex flex-row gap-3">
-
+ 
                                         {user._id === it.user._id ? ( 
-
+ 
                                             <h1 className="text-[#00BBFF]">{it.user.name}</h1> 
-
+ 
                                             ) : (
-
+ 
                                             <h1 className="text-black">{it.user.name}</h1> 
-
+ 
                                             )}
-
+ 
                                         <Rating
-                                        value={it.rating} 
+                                        value={it.rating}
                                         readOnly
                                         sx={{
                                             zIndex: 2,
@@ -212,18 +257,21 @@ import { useState } from "react";
                                             "& .MuiRating-icon svg": {
                                             strokeWidth: 0.4,
                                             },
-
+ 
                                             "& .MuiRating-iconFilled svg": {
                                             fill: "url(#starGradient)",
                                             stroke: "black",
                                             },
-
+ 
                                             "& .MuiRating-iconEmpty svg": {
                                             fill: "transparent" ,
                                             stroke: "#333",
                                             },
                                         }}
                                         />
+                                        <span className="text-sm font-normal text-gray-500">
+                                            {format(new Date(it.createdAt), "MMM d, yyyy · h:mm a")}
+                                        </span>
                                         {(user && user._id===it.user._id) && (
                                             <>
                                                 <Button type='button' variant={'ghost'} onClick={() => {
@@ -248,18 +296,18 @@ import { useState } from "react";
                                 </div>
                             ))}
                         </div>
-
+ 
                         <div className="flex flex-col py-5 pl-9 pr-0 flex-3 gap-3">
                             <img src={restaurants.imgsrc} className=""/>
                             <h1 className="text-4xl text-center">{restaurants?.name}</h1>
                             <h1 className="text-xl text-center">Adress : {restaurants?.address} Tel : {restaurants.telephone}</h1>
                         </div>
                     </div>
-
+ 
                 </div>
             </form>
         </div>
     )
 }
-
+ 
 export {ViewCommentPopPage};
