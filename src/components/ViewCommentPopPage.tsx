@@ -269,6 +269,18 @@ type FilterRating = 0 | 1 | 2 | 3 | 4 | 5;
                                             },
                                         }}
                                         />
+                                        <span className="text-sm font-normal text-gray-500">
+                                            {/* FIX: Casting to any to allow the Date constructor to process the property correctly */}
+                                            {new Date((it.isEdited ? it.updatedAt : it.createdAt) as any).toLocaleString('en-US', { 
+                                                year: 'numeric', 
+                                                month: 'numeric', 
+                                                day: 'numeric', 
+                                                hour: 'numeric', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            })}
+                                            {it.isEdited && <span className="ml-1 text-gray-400">(edited)</span>}
+                                        </span>
                                         {(user && user._id===it.user._id) && (
                                             <>
                                                 <Button type='button' variant={'ghost'} onClick={() => {
