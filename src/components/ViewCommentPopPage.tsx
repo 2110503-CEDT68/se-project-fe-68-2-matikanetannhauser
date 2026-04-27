@@ -8,9 +8,9 @@ import { useRouter } from "next/navigation";
 import { PencilLine, Trash2 } from "lucide-react";
 import { AlertRemove } from "./AlertRemove";
 import { useState } from "react";
-import { format } from "date-fns";
 
 type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
+type FilterRating = 0 | 1 | 2 | 3 | 4 | 5;
 
  const ViewCommentPopPage = ({restaurants,user,closeCard}:{restaurants:RestaurantType,user: UserType,closeCard: () => void} ) => {
     const router = useRouter();
@@ -132,7 +132,7 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
         const aIsMine = a.user._id === user._id ? 1 : 0;
         const bIsMine = b.user._id === user._id ? 1 : 0;
         if (bIsMine !== aIsMine) return bIsMine - aIsMine;
- 
+
         // Then apply the selected sort within each group
         if (sortBy === "most_recent") {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -146,17 +146,16 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
         return 0;
     });
 
-
-        return (
+    return (
         <div className="z-50 fixed inset-0 bg-black/50 flex justify-center items-center h-dvh w-dvw">
             <form action={handleSubmit}>
                 <div className="flex flex-col pt-12 px-15 pb-10 w-[1300px] h-[760px] bg-white rounded-md p-4 shadow font-bold">
- 
+
                     <div className="flex justify-between ">
                         <div className="w-[100%] flex flex-col gap-5 [text-shadow:0_4px_20px_rgba(0,0,0,1)]  relative">
                             <h1 className="text-4xl ">Reviews</h1>
                             <h1 className="text-xl ">{user?.name}</h1>
- 
+
                             <div className="flex flex-row gap-3 [text-shadow:0_4px_20px_rgba(0,0,0,1)] ">
                                 <div className=" w-full flex flex-col items-end ">
                                     <input id='comment' name='comment' placeholder="Add Comment Here....." className="text-xl h-[40px] w-[100%] border-b border-gray-500" required 
@@ -176,17 +175,17 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                                             "& .MuiRating-icon svg": {
                                             strokeWidth: 0.4,
                                             },
- 
+
                                             "& .MuiRating-iconFilled svg": {
                                             fill: "url(#starGradient)",
                                             stroke: "black",
                                             },
- 
+
                                             "& .MuiRating-iconEmpty svg": {
                                             fill: "transparent" ,
                                             stroke: "#333",
                                             },
- 
+
                                             
                                         }}
                                         value={starVal}
@@ -204,11 +203,11 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                             <Button variant={'destructive'} onClick={closeCard} className="absolute top-0 right-0">X</Button>
                         </div>
                     </div>
- 
+
                     <div className="flex flex-1">
- 
+
                         <div className="h-full flex flex-col  flex-7 gap-4 overflow-y-scroll">
- 
+
                             <div className="flex flex-row gap-2">
                                 <select
                                     value={sortBy}
@@ -218,7 +217,7 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                                     <option value="highest_rating">Highest Rating</option>
                                     <option value="lowest_rating">Lowest Rating</option>
                                 </select>
- 
+
                                 <select
                                     value={filterRating}
                                     onChange={(e) => setFilterRating(Number(e.target.value) as FilterRating)}
@@ -231,22 +230,22 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                                     <option value={5}>5 Stars</option>
                                 </select>
                             </div>
- 
+
                             {sortedComments.map((it: CommentType) => (
                                 
                                 <div key={it._id.toString()} className="flex flex-col !w-[96%] !overflow-visible border-b border-gray-500 pb-4 gap-2 overflow-scroll">
                                     <div className="flex flex-row gap-3">
- 
+
                                         {user._id === it.user._id ? ( 
- 
+
                                             <h1 className="text-[#00BBFF]">{it.user.name}</h1> 
- 
+
                                             ) : (
- 
+
                                             <h1 className="text-black">{it.user.name}</h1> 
- 
+
                                             )}
- 
+
                                         <Rating
                                         value={it.rating}
                                         readOnly
@@ -257,12 +256,12 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                                             "& .MuiRating-icon svg": {
                                             strokeWidth: 0.4,
                                             },
- 
+
                                             "& .MuiRating-iconFilled svg": {
                                             fill: "url(#starGradient)",
                                             stroke: "black",
                                             },
- 
+
                                             "& .MuiRating-iconEmpty svg": {
                                             fill: "transparent" ,
                                             stroke: "#333",
@@ -270,7 +269,15 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                                         }}
                                         />
                                         <span className="text-sm font-normal text-gray-500">
-                                            {format(new Date(it.createdAt), "MMM d, yyyy · h:mm a")}
+                                            {new Date(it.isEdited ? it.updatedAt : it.createdAt).toLocaleString('en-US', { 
+                                                year: 'numeric', 
+                                                month: 'numeric', 
+                                                day: 'numeric', 
+                                                hour: 'numeric', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            })}
+                                            {it.isEdited && <span className="ml-1 text-gray-400">(edited)</span>}
                                         </span>
                                         {(user && user._id===it.user._id) && (
                                             <>
@@ -296,18 +303,18 @@ type SortOption = "most_recent" | "highest_rating" | "lowest_rating";
                                 </div>
                             ))}
                         </div>
- 
+
                         <div className="flex flex-col py-5 pl-9 pr-0 flex-3 gap-3">
                             <img src={restaurants.imgsrc} className=""/>
                             <h1 className="text-4xl text-center">{restaurants?.name}</h1>
                             <h1 className="text-xl text-center">Adress : {restaurants?.address} Tel : {restaurants.telephone}</h1>
                         </div>
                     </div>
- 
+
                 </div>
             </form>
         </div>
     )
 }
- 
+
 export {ViewCommentPopPage};
