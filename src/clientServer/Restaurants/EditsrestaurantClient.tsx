@@ -86,7 +86,6 @@ export default function EditsrestaurantClient({user,restaurants}:{user:any,resta
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 /> </label>
-                <label>Status </label>
 
                 <label>Address <TextField
                   id="address"
