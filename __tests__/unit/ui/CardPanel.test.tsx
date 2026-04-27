@@ -30,11 +30,11 @@ jest.mock("@/components/ui/mySwiper", () => {
     restaurants,
     ratingMap,
   }: {
-    restaurants: Array<{ _id: string; name: string }>;
+    restaurants: Array<{ _id: string; name: string }> | null;
     ratingMap: Record<string, number>;
   }) => (
     <div data-testid="my-swiper" data-rating-map={JSON.stringify(ratingMap)}>
-      {restaurants.map((r) => (
+      {(restaurants ?? []).map((r) => (   // ← add ?? []
         <span key={r._id} data-testid="swiper-item">
           {r.name}
         </span>
@@ -44,7 +44,6 @@ jest.mock("@/components/ui/mySwiper", () => {
   Mock.displayName = "MockMySwiper";
   return Mock;
 });
-
 // ── Component under test ──────────────────────────────────────────────────────
 
 import CardPanel from "@/components/ui/CardPanel";
@@ -278,5 +277,30 @@ describe("CardPanel", () => {
 
     await expect(CardPanel()).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFound).toHaveBeenCalled();
+  });
+
+  it("handles null restaurants from the API without crashing", async () => {
+    // Simulate the API returning a payload where data.data is null/undefined
+    global.fetch = jest.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: jest.fn(),
+        json: jest.fn().mockResolvedValue({
+          success: true,
+          data: { success: true, count: 0, data: null }, // <-- null triggers the ?.
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: jest.fn(),
+        json: jest.fn().mockResolvedValue({ success: true }),
+      });
+
+    const ui = await CardPanel();
+    render(ui as React.ReactElement);
+    // result will be undefined/null, ratingMapObj stays {}, swiper still renders
+    expect(screen.getByTestId("my-swiper")).toBeInTheDocument();
   });
 });
